@@ -1,0 +1,38 @@
+from Crypto.Cipher import AES
+from Crypto.Random import get_random_bytes
+
+def pad(data):
+    length = 16 - (len(data) % 16)
+    return data + (chr(length) * length).encode()
+
+def unpad(data):
+    return data[:-data[-1]]
+
+def encrypt_file(input_file, output_file, key):
+    cipher = AES.new(key, AES.MODE_CBC)
+    with open(input_file, 'rb') as file:
+        data = file.read()
+    encrypted_data = cipher.iv + cipher.encrypt(pad(data))
+    with open(output_file, 'wb') as file:
+        file.write(encrypted_data)
+
+def decrypt_file(input_file, output_file, key):
+    with open(input_file, 'rb') as file:
+        data = file.read()
+    iv = data[:16]
+    cipher = AES.new(key, AES.MODE_CBC, iv)
+    decrypted_data = unpad(cipher.decrypt(data[16:]))
+    with open(output_file, 'wb') as file:
+        file.write(decrypted_data)
+
+if __name__ == "__main__":
+    # Замените 'your_key' на свой секретный ключ (должен быть 16, 24 или 32 байта)
+    key = b'your_keyxxxxxxxx'
+    
+    # Пример использования для шифрования и дешифровки файла
+    input_file_path = 'путь_к_исходному_файлу.docx'
+    encrypted_file_path = 'путь_к_зашифрованному_файлу.enc'
+    decrypted_file_path = 'путь_к_дешифрованному_файлу.docx'
+
+    encrypt_file(input_file_path, encrypted_file_path, key)
+    decrypt_file(encrypted_file_path, decrypted_file_path, key)
